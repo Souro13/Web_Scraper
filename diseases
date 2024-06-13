@@ -1,0 +1,100 @@
+import requests
+from bs4 import BeautifulSoup
+import json
+
+def scrape_disease_details(disease_url):
+  """Scrapes details of a specific disease from a given URL.
+
+  Args:
+      disease_url: The URL of the disease page on the website.
+
+  Returns:
+      A dictionary containing the scraped data for the disease, or None 
+      if scraping fails.
+  """
+  disease_data = {}
+  try:
+    response = requests.get(disease_url)
+    soup = BeautifulSoup(response.content, "lxml")
+
+    # Find disease name (replace with specific selectors based on website structure)
+    disease_name_element = soup.find("h1", class_="disease-h1")  # Adjust selector as needed
+    if disease_name_element:
+      disease_name = disease_name_element.text.strip()
+      disease_data["Disease Name"] = disease_name
+    else:
+      print(f"Disease name not found for URL: {disease_url}")
+      return None  # Handle missing disease name gracefully
+
+    # Find other data points using appropriate selectors (replace with specific selectors)
+    overview_element = soup.find("div", class_="disease-overview")  # Adjust selector
+    if overview_element:
+      overview = overview_element.text.strip()
+      disease_data["Overview"] = overview
+    else:
+      print(f"Overview not found for URL: {disease_url}")
+
+    key_facts = soup.find_all("li", class_="key-fact-item")  # Adjust selector
+    key_facts_list = []
+    if key_facts:
+      for fact in key_facts:
+        key_facts_list.append(fact.text.strip())
+      disease_data["Key Facts"] = key_facts_list
+
+    symptoms_section = soup.find("section", id="symptoms")  # Adjust based on website
+    symptoms = []
+    if symptoms_section:
+      symptoms = symptoms_section.find_all("li")  # Adjust selector
+      symptoms_list = [symptom.text.strip() for symptom in symptoms]
+      disease_data["Symptoms"] = symptoms_list
+    else:
+      print(f"Symptoms section not found for URL: {disease_url}")
+
+    # ... repeat for other data points (Causes, Types, Risk factors, etc.) with similar checks
+
+    # FAQs and References scraping (replace with specific selectors if needed)
+    faqs_section = soup.find("section", id="faqs")  # Adjust based on website
+    faqs = []
+    if faqs_section:
+      for faq in faqs_section.find_all("div", class_="faq"):  # Adjust selector
+        question = faq.find("h4").text.strip()
+        answer = faq.find("p").text.strip()
+        faqs.append({"Question": question, "Answer": answer})
+      disease_data["FAQs"] = faqs
+    else:
+      print(f"FAQs section not found for URL: {disease_url}")
+
+    references_section = soup.find("section", id="references")  # Adjust based on website
+    references = []
+    if references_section:
+      for reference in references_section.find_all("a"):
+        reference_url = reference.get("href")
+        references.append(reference_url)
+      disease_data["References"] = references
+    else:
+      print(f"References section not found for URL: {disease_url}")
+
+    return disease_data
+  except requests.exceptions.RequestException as e:
+    print(f"Error scraping disease details: {e}")
+    return None
+
+
+def scrape_disease_list(base_url):
+  """Scrapes a list of disease names and their details URLs from a base URL.
+
+  Args:
+      base_url: The base URL of the website containing the disease list.
+
+  Returns:
+      A list of dictionaries, where each dictionary contains the disease name 
+      and its details URL.
+  """
+  disease_list = []
+  try:
+    response = requests.get(base_url)
+    soup = BeautifulSoup(response.content, "lxml")
+
+    # Find disease name and details URL elements (replace with specific selectors)
+    for disease_item in soup.find_all("div", class_="disease-item"):  # Adjust selector
+      disease_name_element = disease
